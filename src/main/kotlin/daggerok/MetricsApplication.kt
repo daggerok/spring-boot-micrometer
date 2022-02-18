@@ -1,6 +1,8 @@
 package daggerok
 
-import io.micrometer.core.instrument.Counter
+import daggerok.dsl.count
+import daggerok.dsl.tag
+import daggerok.dsl.with
 import io.micrometer.core.instrument.MeterRegistry
 import org.springframework.boot.autoconfigure.SpringBootApplication
 import org.springframework.boot.runApplication
@@ -16,18 +18,33 @@ fun main(args: Array<String>) {
 @RestController
 class MetricsResource(private val meterRegistry: MeterRegistry) {
 
-    @GetMapping("/api/failed/{name}")
-    fun fail(@PathVariable name: String) =
-        Counter.builder("$name-fail")
-            .baseUnit("none")
-            .description("Failed counter for $name")
-            .tags("status", "failed")
-            .register(meterRegistry) // job-1-failed, job-2-failed, ...
-            .increment()
+    @GetMapping("/api/failed/{metric}")
+    fun fail(@PathVariable metric: String) =
+        meterRegistry.count {
+            amount = 1
+            name = "$metric-fail"
+            description = "Failed counter for $metric"
+            tag {
+                key = "status"
+                value = "failed"
+            }
+            with {
+                println("Oops...")
+            }
+        }
 
-    @GetMapping("/api/succeeded/{name}")
-    fun success(@PathVariable name: String) =
-        meterRegistry.counter("$name-success", "status", "succeeded") // job-1-success
-            .apply { increment() }
+    @GetMapping("/api/succeeded/{metric}")
+    fun success(@PathVariable metric: String) =
+        meterRegistry
+            .count {
+                name = "$metric-success"
+                tag {
+                    key = "status"
+                    value = "succeeded"
+                }
+                with {
+                    println("Good...")
+                }
+            }
             .count()
 }

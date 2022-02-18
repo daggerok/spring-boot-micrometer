@@ -10,8 +10,11 @@ Accept: application/json
 GET http://localhost:8080/api/succeeded/job-1
 Accept: application/json
 
-### all available metrics
-GET http://localhost:8080/actuator/metrics
+###
+GET http://localhost:8080/actuator/metrics/job-1-fail
+
+###
+GET http://localhost:8080/actuator/metrics/job-1-success
 
 ### failed job-1 metrics
 GET http://localhost:8080/actuator/metrics/job-1-fail?tag=status:failed
